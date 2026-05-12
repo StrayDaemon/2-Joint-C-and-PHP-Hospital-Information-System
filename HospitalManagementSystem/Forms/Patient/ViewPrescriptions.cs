@@ -23,7 +23,7 @@ namespace HospitalManagementSystem.Forms.Patient
             try
             {
                 var result = await ApiClient.GetAsync<ApiResponse<List<Prescription>>>(
-                    $"patient/get_prescriptions.php?pid={SessionManager.PatientId}");
+                        $"prescriptions?pid={SessionManager.PatientId}");
 
                 if (result.Success)
                 {
@@ -81,9 +81,8 @@ namespace HospitalManagementSystem.Forms.Patient
         {
             try
             {
-                var result = await ApiClient.GetAsync<ApiResponse<Prescription>>(
-                    $"patient/get_prescription_detail.php?id={appId}" +
-                    $"&pid={SessionManager.PatientId}");
+                var result = await ApiClient.GetAsync<ApiResponse<Models.Prescription>>(
+                    $"prescriptions/{appId}?pid={SessionManager.PatientId}");
 
                 if (result.Success && result.Data != null)
                 {

@@ -21,7 +21,7 @@ namespace HospitalManagementSystem.Forms.Patient
             try
             {
                 var result = await ApiClient.GetAsync<ApiResponse<List<Appointment>>>(
-                    $"patient/get_appointments.php?pid={SessionManager.PatientId}");
+                    $"appointments?pid={SessionManager.PatientId}");
 
                 if (result.Success)
                 {
@@ -139,8 +139,12 @@ namespace HospitalManagementSystem.Forms.Patient
                     { "pid",        SessionManager.PatientId.ToString() }
                 };
 
-                var result = await ApiClient.PostAsync<ApiResponse>(
-                    "patient/cancel_appointment.php", formData);
+                var result = await ApiClient.PutAsync<ApiResponse>(
+                    $"appointments/{txtAppID.Text}/status",
+                    new Dictionary<string, string>
+                    {
+                        { "userStatus", "0" }
+                    });
 
                 MessageBox.Show(result.Message,
                     result.Success ? "Cancelled" : "Error",

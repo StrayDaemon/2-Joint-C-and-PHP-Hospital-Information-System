@@ -5,6 +5,7 @@ using MaterialSkin.Controls;
 using HospitalManagementSystem.Core;
 using HospitalManagementSystem.Models;
 using Newtonsoft.Json;
+using PatientModel = HospitalManagementSystem.Models.Patient;
 
 namespace HospitalManagementSystem.Forms.Admin
 {
@@ -21,8 +22,8 @@ namespace HospitalManagementSystem.Forms.Admin
         {
             try
             {
-                var result = await ApiClient.GetAsync<ApiResponse<List<Patient>>>(
-                    "admin/get_patients.php");
+                var result = await ApiClient.GetAsync<ApiResponse<List<PatientModel>>>(
+                    "patients");
 
                 if (result.Success)
                 {
@@ -81,7 +82,7 @@ namespace HospitalManagementSystem.Forms.Admin
                 formData.Add("cpassword", txtFname.Text.ToLower() + "123");
 
                 var result = await ApiClient.PostAsync<ApiResponse>(
-                    "admin/add_patient.php", formData);
+                    "patients", formData);
 
                 MessageBox.Show(result.Message,
                     result.Success ? "Success" : "Error",
@@ -114,8 +115,8 @@ namespace HospitalManagementSystem.Forms.Admin
                 var formData = BuildFormData();
                 formData.Add("pid", txtPid.Text);
 
-                var result = await ApiClient.PostAsync<ApiResponse>(
-                    "admin/update_patient.php", formData);
+                var result = await ApiClient.PutAsync<ApiResponse>(
+                    $"patients/{txtPid.Text}", formData);
 
                 MessageBox.Show(result.Message,
                     result.Success ? "Success" : "Error",
@@ -154,8 +155,8 @@ namespace HospitalManagementSystem.Forms.Admin
                     { "pid", txtPid.Text }
                 };
 
-                var result = await ApiClient.PostAsync<ApiResponse>(
-                    "admin/delete_patient.php", formData);
+                var result = await ApiClient.DeleteAsync<ApiResponse>(
+                    $"patients/{txtPid.Text}");
 
                 MessageBox.Show(result.Message,
                     result.Success ? "Success" : "Error",

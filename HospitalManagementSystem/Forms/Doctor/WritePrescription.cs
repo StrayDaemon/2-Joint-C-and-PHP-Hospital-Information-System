@@ -64,7 +64,7 @@ namespace HospitalManagementSystem.Forms.Doctor
             try
             {
                 var result = await ApiClient.GetAsync<ApiResponse<Models.Prescription>>(
-                    $"doctor/get_prescription.php?id={_appId}");
+                    $"prescriptions/{_appId}");
 
                 if (result.Success && result.Data != null)
                 {
@@ -115,7 +115,7 @@ namespace HospitalManagementSystem.Forms.Doctor
                 };
 
                 var result = await ApiClient.PostAsync<ApiResponse>(
-                    "doctor/save_prescription.php", formData);
+                    "prescriptions", formData);
 
                 MessageBox.Show(result.Message,
                     result.Success ? "Success" : "Error",

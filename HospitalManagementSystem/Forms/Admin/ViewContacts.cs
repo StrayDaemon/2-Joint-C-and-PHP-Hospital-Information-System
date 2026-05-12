@@ -21,7 +21,7 @@ namespace HospitalManagementSystem.Forms.Admin
             try
             {
                 var result = await ApiClient.GetAsync<ApiResponse<List<Contact>>>(
-                    "admin/get_contacts.php");
+                    "contacts");
 
                 if (result.Success)
                 {

@@ -20,7 +20,7 @@ namespace HospitalManagementSystem.Forms.Admin
             try
             {
                 var result = await ApiClient.GetAsync<ApiResponse<List<Appointment>>>(
-                    "admin/get_appointments.php");
+                    "appointments");
 
                 if (result.Success)
                 {
@@ -108,8 +108,13 @@ namespace HospitalManagementSystem.Forms.Admin
                     { "doctorStatus", cmbDoctorStatus.SelectedIndex.ToString() }
                 };
 
-                var result = await ApiClient.PostAsync<ApiResponse>(
-                    "admin/update_appointment_status.php", formData);
+                var result = await ApiClient.PutAsync<ApiResponse>(
+                     $"appointments/{txtAppID.Text}/status",
+                     new Dictionary<string, string>
+                     {
+                        { "userStatus",   cmbUserStatus.SelectedIndex.ToString()   },
+                        { "doctorStatus", cmbDoctorStatus.SelectedIndex.ToString() }
+                     });
 
                 MessageBox.Show(result.Message,
                     result.Success ? "Success" : "Error",
@@ -150,8 +155,8 @@ namespace HospitalManagementSystem.Forms.Admin
                     { "id", txtAppID.Text }
                 };
 
-                var result = await ApiClient.PostAsync<ApiResponse>(
-                    "admin/delete_appointment.php", formData);
+                var result = await ApiClient.DeleteAsync<ApiResponse>(
+                    $"appointments/{txtAppID.Text}");
 
                 MessageBox.Show(result.Message,
                     result.Success ? "Success" : "Error",
@@ -182,7 +187,7 @@ namespace HospitalManagementSystem.Forms.Admin
                 string filter = cmbFilter.SelectedIndex.ToString();
 
                 var result = await ApiClient.GetAsync<ApiResponse<List<Appointment>>>(
-                    $"admin/get_appointments.php?filter={filter}");
+                    $"appointments?filter={filter}");
 
                 if (result.Success)
                 {

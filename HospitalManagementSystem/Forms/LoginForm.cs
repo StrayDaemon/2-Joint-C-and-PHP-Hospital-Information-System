@@ -87,61 +87,46 @@ namespace HospitalManagementSystem.Forms
         private async System.Threading.Tasks.Task LoginAsAdmin(Dictionary<string, string> formData)
         {
             var result = await ApiClient.PostAsync<ApiResponse>(
-                "admin/login.php", formData);
-
-            if (result.Success)
-            {
-                SessionManager.Role = "admin";
-                SessionManager.Username = formData["username"];
-
-                this.Hide();
-                new Admin.AdminDashboard().Show();
-            }
-            else
-            {
-                MessageBox.Show(result.Message, "Login Failed",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
+            "auth/login",
+            new Dictionary<string, string>
+    {
+                { "username", formData["username"] },
+                { "password", formData["password"] },
+                { "role",     "admin"              }
+            });
         }
 
         // ── Doctor Login ────────────────────────────────────────
         private async System.Threading.Tasks.Task LoginAsDoctor(Dictionary<string, string> formData)
         {
             var result = await ApiClient.PostAsync<ApiResponse>(
-                "doctor/login.php", formData);
+            "auth/login",
+            new Dictionary<string, string>
+                {
+                    { "username", formData["username"] },
+                    { "password", formData["password"] },
+                    { "role",     "doctor"             }
+            });
 
-            if (result.Success)
-            {
-                SessionManager.Role = "doctor";
-                SessionManager.Username = formData["username"];
-
-                this.Hide();
-                new Doctor.DoctorDashboard().Show();
-            }
-            else
-            {
-                MessageBox.Show(result.Message, "Login Failed",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
         }
 
         // ── Patient Login ───────────────────────────────────────
-        private async System.Threading.Tasks.Task LoginAsPatient(Dictionary<string, string> formData)
+        private async Task LoginAsPatient(Dictionary<string, string> formData)
         {
-            var result = await ApiClient.PostAsync<ApiResponse>(
-                "patient/login.php", formData);
+            var result = await ApiClient.PostAsync<ApiResponse<PatientPayload>>(
+                "auth/login",
+                new Dictionary<string, string>
+                {
+            { "username", formData["username"] },
+            { "password", formData["password"] },
+            { "role",     "patient"            }
+                });
 
             if (result.Success)
             {
                 SessionManager.Role = "patient";
-                SessionManager.Username = formData["username"];
-
-                // Store patient ID from response
-                if (result.Data != null)
-                {
-                    var data = result.Data as Newtonsoft.Json.Linq.JObject;
-                    SessionManager.PatientId = data?["pid"]?.Value<int>() ?? 0;
-                }
+                SessionManager.Username = result.Data.FullName;
+                SessionManager.PatientId = result.Data.Pid;
 
                 this.Hide();
                 new Patient.PatientDashboard().Show();
@@ -151,6 +136,19 @@ namespace HospitalManagementSystem.Forms
                 MessageBox.Show(result.Message, "Login Failed",
                     MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+        }
+
+        // ── Add this inner class to LoginForm.cs ─────────────────
+        private class PatientPayload
+        {
+            [Newtonsoft.Json.JsonProperty("pid")]
+            public int Pid { get; set; }
+
+            [Newtonsoft.Json.JsonProperty("fullName")]
+            public string FullName { get; set; }
+
+            [Newtonsoft.Json.JsonProperty("email")]
+            public string Email { get; set; }
         }
     }
 }

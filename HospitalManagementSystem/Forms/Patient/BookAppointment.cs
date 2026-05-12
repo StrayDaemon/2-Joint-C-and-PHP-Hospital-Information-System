@@ -1,10 +1,12 @@
 ﻿using HospitalManagementSystem.Core;
 using HospitalManagementSystem.Helpers;
-using HospitalManagementSystem.Models;
 using Microsoft.VisualBasic;
 using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
+using HospitalManagementSystem.Models;
+using PatientModel = HospitalManagementSystem.Models.Patient;
+using DoctorModel = HospitalManagementSystem.Models.Doctor;
 
 namespace HospitalManagementSystem.Forms.Patient
 {
@@ -23,8 +25,9 @@ namespace HospitalManagementSystem.Forms.Patient
             try
             {
                 // Fetch patient details using pid from session
-                var result = await ApiClient.GetAsync<ApiResponse<Patient>>(
-                    $"patient/get_profile.php?pid={SessionManager.PatientId}");
+                var result = await ApiClient.GetAsync<ApiResponse<PatientModel>>(
+                    $"patients/{SessionManager.PatientId}");
+
 
                 if (result.Success && result.Data != null)
                 {
@@ -54,8 +57,9 @@ namespace HospitalManagementSystem.Forms.Patient
         {
             try
             {
-                var result = await ApiClient.GetAsync<ApiResponse<List<Doctor>>>(
-                    "patient/get_doctors.php");
+                var result = await ApiClient.GetAsync<ApiResponse<List<DoctorModel>>>(
+                    "doctors");
+
 
                 if (result.Success)
                 {
@@ -130,7 +134,7 @@ namespace HospitalManagementSystem.Forms.Patient
                 };
 
                 var result = await ApiClient.PostAsync<ApiResponse>(
-                    "patient/book_appointment.php", formData);
+                    "appointments", formData);
 
                 MessageBox.Show(result.Message,
                     result.Success ? "Booking Confirmed!" : "Error",

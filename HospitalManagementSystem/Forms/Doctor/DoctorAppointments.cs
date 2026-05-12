@@ -22,7 +22,8 @@ namespace HospitalManagementSystem.Forms.Doctor
             {
                 // Pass logged-in doctor username as query param
                 var result = await ApiClient.GetAsync<ApiResponse<List<Appointment>>>(
-                    $"doctor/get_appointments.php?doctor={SessionManager.Username}");
+                    $"appointments?doctor={SessionManager.Username}");
+
 
                 if (result.Success)
                 {
@@ -112,8 +113,12 @@ namespace HospitalManagementSystem.Forms.Doctor
                     { "doctor",       SessionManager.Username }
                 };
 
-                var result = await ApiClient.PostAsync<ApiResponse>(
-                    "doctor/update_status.php", formData);
+                var result = await ApiClient.PutAsync<ApiResponse>(
+                    $"appointments/{txtAppID.Text}/status",
+                    new Dictionary<string, string>
+                    {
+                        { "doctorStatus", cmbDoctorStatus.SelectedIndex.ToString() }
+                    });
 
                 MessageBox.Show(result.Message,
                     result.Success ? "Success" : "Error",
