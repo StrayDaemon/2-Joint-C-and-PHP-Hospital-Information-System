@@ -6,12 +6,6 @@ using MaterialSkin.Controls;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Numerics;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -22,10 +16,11 @@ namespace HospitalManagementSystem.Forms
         public LoginForm()
         {
             InitializeComponent();
-
-            // Attach MaterialSkin to this form
             var skinManager = MaterialSkinManager.Instance;
             skinManager.AddFormToManage(this);
+
+            skinManager.Theme = MaterialSkinManager.Themes.LIGHT;
+            skinManager.ColorScheme = new ColorScheme(Primary.BlueGrey800, Primary.BlueGrey900, Primary.BlueGrey500, Accent.LightBlue200, TextShade.WHITE);
         }
 
         // ── Login Button Click ──────────────────────────────────
@@ -40,8 +35,11 @@ namespace HospitalManagementSystem.Forms
                 string.IsNullOrEmpty(password) ||
                 string.IsNullOrEmpty(role))
             {
-                MessageBox.Show("Please fill in all fields and select a role.",
-                    "Validation", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show(
+                    "Please fill in all fields and select a role.",
+                    "Validation",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
                 return;
             }
 
@@ -50,31 +48,29 @@ namespace HospitalManagementSystem.Forms
 
             try
             {
-                var formData = new Dictionary<string, string>
-                {
-                    { "username", username },
-                    { "password", password }
-                };
-
                 switch (role)
                 {
                     case "Admin":
-                        await LoginAsAdmin(formData);
+                        await LoginAsAdmin(username, password);
                         break;
 
                     case "Doctor":
-                        await LoginAsDoctor(formData);
+                        await LoginAsDoctor(username, password);
                         break;
 
                     case "Patient":
-                        await LoginAsPatient(formData);
+                        await LoginAsPatient(username, password);
                         break;
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Connection error: {ex.Message}\n\nMake sure XAMPP is running.",
-                    "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(
+                    $"Connection error: {ex.Message}\n\n" +
+                    "Make sure Node.js API is running on port 3000.",
+                    "Error",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
             }
             finally
             {
@@ -84,61 +80,121 @@ namespace HospitalManagementSystem.Forms
         }
 
         // ── Admin Login ─────────────────────────────────────────
-        private async System.Threading.Tasks.Task LoginAsAdmin(Dictionary<string, string> formData)
+        private async Task LoginAsAdmin(string username, string password)
         {
             var result = await ApiClient.PostAsync<ApiResponse>(
-            "auth/login",
-            new Dictionary<string, string>
-    {
-                { "username", formData["username"] },
-                { "password", formData["password"] },
-                { "role",     "admin"              }
-            });
+                "auth/login",
+                new Dictionary<string, string>
+                {
+                    { "username", username },
+                    { "password", password },
+                    { "role",     "admin"  }
+                });
+
+            if (result.Success)
+            {
+                // ✅ Store session
+                SessionManager.Role = "admin";
+                SessionManager.Username = username;
+
+                // ✅ Navigate to Admin Dashboard
+                this.Hide();
+                new Admin.AdminDashboard().Show();
+            }
+            else
+            {
+                MessageBox.Show(
+                    result.Message,
+                    "Login Failed",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
         }
 
         // ── Doctor Login ────────────────────────────────────────
-        private async System.Threading.Tasks.Task LoginAsDoctor(Dictionary<string, string> formData)
+        private async Task LoginAsDoctor(string username, string password)
         {
-            var result = await ApiClient.PostAsync<ApiResponse>(
-            "auth/login",
-            new Dictionary<string, string>
+            var result = await ApiClient.PostAsync<ApiResponse<DoctorPayload>>(
+                "auth/login",
+                new Dictionary<string, string>
                 {
-                    { "username", formData["username"] },
-                    { "password", formData["password"] },
-                    { "role",     "doctor"             }
-            });
+                    { "username", username },
+                    { "password", password },
+                    { "role",     "doctor" }
+                });
 
+            if (result.Success)
+            {
+                // ✅ Store session
+                SessionManager.Role = "doctor";
+                SessionManager.Username = result.Data?.Username ?? username;
+
+                // ✅ Navigate to Doctor Dashboard
+                this.Hide();
+                new Doctor.DoctorDashboard().Show();
+            }
+            else
+            {
+                MessageBox.Show(
+                    result.Message,
+                    "Login Failed",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
+            }
         }
 
         // ── Patient Login ───────────────────────────────────────
-        private async Task LoginAsPatient(Dictionary<string, string> formData)
+        private async Task LoginAsPatient(string username, string password)
         {
             var result = await ApiClient.PostAsync<ApiResponse<PatientPayload>>(
                 "auth/login",
                 new Dictionary<string, string>
                 {
-            { "username", formData["username"] },
-            { "password", formData["password"] },
-            { "role",     "patient"            }
+                    { "username", username },
+                    { "password", password },
+                    { "role",     "patient"}
                 });
 
             if (result.Success)
             {
+                // ✅ Store session
                 SessionManager.Role = "patient";
-                SessionManager.Username = result.Data.FullName;
-                SessionManager.PatientId = result.Data.Pid;
+                SessionManager.Username = result.Data?.FullName ?? username;
+                SessionManager.PatientId = result.Data?.Pid ?? 0;
 
+                // ✅ Navigate to Patient Dashboard
                 this.Hide();
                 new Patient.PatientDashboard().Show();
             }
             else
             {
-                MessageBox.Show(result.Message, "Login Failed",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(
+                    result.Message,
+                    "Login Failed",
+                    MessageBoxButtons.OK,
+                    MessageBoxIcon.Error);
             }
         }
 
-        // ── Add this inner class to LoginForm.cs ─────────────────
+        // ── Payload Classes ─────────────────────────────────────
+
+        // Maps Node.js doctor login response data
+        private class DoctorPayload
+        {
+            [Newtonsoft.Json.JsonProperty("username")]
+            public string Username { get; set; }
+
+            [Newtonsoft.Json.JsonProperty("email")]
+            public string Email { get; set; }
+
+            [Newtonsoft.Json.JsonProperty("spec")]
+            public string Spec { get; set; }
+
+            [Newtonsoft.Json.JsonProperty("docFees")]
+            public int DocFees { get; set; }
+        }
+
+        // Maps Node.js patient login response data
         private class PatientPayload
         {
             [Newtonsoft.Json.JsonProperty("pid")]
@@ -149,6 +205,12 @@ namespace HospitalManagementSystem.Forms
 
             [Newtonsoft.Json.JsonProperty("email")]
             public string Email { get; set; }
+
+            [Newtonsoft.Json.JsonProperty("fname")]
+            public string Fname { get; set; }
+
+            [Newtonsoft.Json.JsonProperty("lname")]
+            public string Lname { get; set; }
         }
     }
 }
