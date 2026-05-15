@@ -361,3 +361,15 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+# Additional ignores for VS Code, Rider, cache, and project-specific files
+# Visual Studio Code
+.vscode/
+# Rider
+.idea/
+*.sln.iml
+# Cache
+*.lscache
+# Logs
+*.log
+# Project-specific
+HospitalManagementSystem.csproj.lscache
