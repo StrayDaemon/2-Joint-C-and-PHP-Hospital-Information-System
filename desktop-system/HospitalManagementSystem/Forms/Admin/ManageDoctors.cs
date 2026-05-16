@@ -1,5 +1,4 @@
 ﻿using HospitalManagementSystem.Core;
-using HospitalManagementSystem.Helpers;
 using HospitalManagementSystem.Models;
 using System;
 using System.Collections.Generic;
@@ -14,16 +13,6 @@ namespace HospitalManagementSystem.Forms.Admin
         public ManageDoctors()
         {
             InitializeComponent();
-
-            DataGridHelper.Apply(dgvDoctors);
-            // username | email | spec | docFees
-            DataGridHelper.SetColumnWidths(dgvDoctors,
-                130,  // Username
-                -1,   // Email — fills remaining space
-                150,  // Specialization
-                100   // Fees
-            );
-
             LoadDoctors();
         }
 
@@ -42,11 +31,17 @@ namespace HospitalManagementSystem.Forms.Admin
                     foreach (var d in result.Data)
                     {
                         dgvDoctors.Rows.Add(
-                            d.Username, d.Email,
-                            d.Spec, d.DocFees);
+                            d.Username,
+                            d.Email,
+                            d.Spec,
+                            d.DocFees
+                        );
                     }
-
-                    DataGridHelper.AutoFitColumns(dgvDoctors);
+                }
+                else
+                {
+                    MessageBox.Show(result.Message, "Error",
+                        MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
             catch (Exception ex)
