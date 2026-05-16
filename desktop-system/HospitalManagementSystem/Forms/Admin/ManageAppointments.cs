@@ -1,8 +1,9 @@
-﻿using System;
+﻿using HospitalManagementSystem.Core;
+using HospitalManagementSystem.Helpers;
+using HospitalManagementSystem.Models;
+using System;
 using System.Collections.Generic;
 using System.Windows.Forms;
-using HospitalManagementSystem.Core;
-using HospitalManagementSystem.Models;
 
 namespace HospitalManagementSystem.Forms.Admin
 {
@@ -11,6 +12,23 @@ namespace HospitalManagementSystem.Forms.Admin
         public ManageAppointments()
         {
             InitializeComponent();
+            DataGridHelper.Apply(dgvAppointments);
+
+            // ID | pid | patient | gender | doctor | fees
+            // date | time | userStatus | doctorStatus
+            DataGridHelper.SetColumnWidths(dgvAppointments,
+                55,   // App ID
+                55,   // Patient ID
+                140,  // Patient Name
+                70,   // Gender
+                100,  // Doctor
+                70,   // Fees
+                100,  // Date
+                80,   // Time
+                120,  // Patient Status
+                120   // Doctor Status
+            );
+
             LoadAppointments();
         }
 
@@ -28,28 +46,21 @@ namespace HospitalManagementSystem.Forms.Admin
 
                     foreach (var a in result.Data)
                     {
-                        // Convert status int to readable text
                         string uStatus = a.UserStatus == 1 ? "✅ Confirmed" : "⏳ Pending";
                         string dStatus = a.DoctorStatus == 1 ? "✅ Confirmed" : "⏳ Pending";
 
                         dgvAppointments.Rows.Add(
-                            a.ID,
-                            a.Pid,
-                            a.FullName,
-                            a.Gender,
-                            a.Doctor,
-                            a.DocFees,
-                            a.Appdate,
-                            a.Apptime,
-                            uStatus,
-                            dStatus
-                        );
+                            a.ID, a.Pid, a.FullName, a.Gender,
+                            a.Doctor, a.DocFees, a.Appdate,
+                            a.Apptime, uStatus, dStatus);
                     }
-                }
-                else
-                {
-                    MessageBox.Show(result.Message, "Error",
-                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+                    // ✅ Color rows by status
+                    DataGridHelper.ColorRowsByStatus(
+                        dgvAppointments, "colUserStatus");
+
+                    DataGridHelper.AutoFitColumns(dgvAppointments,
+                        minWidth: 55, maxWidth: 250);
                 }
             }
             catch (Exception ex)
