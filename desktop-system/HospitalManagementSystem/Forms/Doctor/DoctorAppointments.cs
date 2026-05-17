@@ -68,10 +68,8 @@ namespace HospitalManagementSystem.Forms.Doctor
                             dStatus
                         );
 
-                        DataGridHelper.ColorRowsByStatus(
-                        dgvAppointments, "colDoctorStatus");
-                        DataGridHelper.AutoFitColumns(dgvAppointments,
-                            minWidth: 55, maxWidth: 200);
+                        DataGridHelper.ColorRowsByStatus(dgvAppointments, "colDoctorStatus");
+                        DataGridHelper.AutoFitColumns(dgvAppointments, minWidth: 55, maxWidth: 200);
 
                     }
                 }
