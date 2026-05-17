@@ -1,4 +1,5 @@
 ﻿using HospitalManagementSystem.Core;
+using HospitalManagementSystem.Helpers;
 using HospitalManagementSystem.Models;
 using System;
 using System.Collections.Generic;
@@ -12,6 +13,16 @@ namespace HospitalManagementSystem.Forms.Admin
         public ViewContacts()
         {
             InitializeComponent();
+            DataGridHelper.Apply(dgvContacts);
+
+            // name | email | contact | message
+            DataGridHelper.SetColumnWidths(dgvContacts,
+                120,  // Name
+                180,  // Email
+                110,  // Contact
+                -1    // Message — fills remaining space
+            );
+
             LoadContacts();
         }
 
@@ -30,20 +41,13 @@ namespace HospitalManagementSystem.Forms.Admin
                     foreach (var c in result.Data)
                     {
                         dgvContacts.Rows.Add(
-                            c.Name,
-                            c.Email,
-                            c.ContactNo,
-                            c.Message
-                        );
+                            c.Name, c.Email,
+                            c.ContactNo, c.Message);
                     }
 
-                    // Update count label
                     lblCount.Text = $"Total Messages: {result.Data.Count}";
-                }
-                else
-                {
-                    MessageBox.Show(result.Message, "Error",
-                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    DataGridHelper.AutoFitColumns(dgvContacts,
+                        minWidth: 100, maxWidth: 400);
                 }
             }
             catch (Exception ex)
