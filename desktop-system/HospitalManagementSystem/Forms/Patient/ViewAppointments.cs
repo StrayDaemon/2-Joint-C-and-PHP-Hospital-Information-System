@@ -12,6 +12,20 @@ namespace HospitalManagementSystem.Forms.Patient
         public ViewAppointments()
         {
             InitializeComponent();
+            DataGridHelper.Apply(dgvAppointments);
+
+            // ID | doctor | fees | date | time | uStatus | dStatus
+            DataGridHelper.SetColumnWidths(dgvAppointments,
+                60,   // App ID
+                130,  // Doctor
+                70,   // Fees
+                110,  // Date
+                80,   // Time
+                130,  // Your Status
+                130   // Doctor Status
+            );
+
+
             LoadMyAppointments();
         }
 
@@ -50,6 +64,10 @@ namespace HospitalManagementSystem.Forms.Patient
                             uStatus,
                             dStatus
                         );
+
+                        DataGridHelper.ColorRowsByStatus(dgvAppointments, "colUserStatus");
+                        DataGridHelper.AutoFitColumns(dgvAppointments,minWidth: 60, maxWidth: 200);
+
                     }
 
                     // Update summary labels
