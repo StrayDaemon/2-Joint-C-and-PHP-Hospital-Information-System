@@ -14,6 +14,18 @@ namespace HospitalManagementSystem.Forms.Patient
         public ViewPrescriptions()
         {
             InitializeComponent();
+            DataGridHelper.Apply(dgvPrescriptions);
+
+            // ID | doctor | date | time | disease | allergy
+            DataGridHelper.SetColumnWidths(dgvPrescriptions,
+                60,   // App ID
+                120,  // Doctor
+                110,  // Date
+                80,   // Time
+                -1,   // Disease — fills space
+                150   // Allergies
+            );
+
             LoadMyPrescriptions();
         }
 
@@ -41,6 +53,9 @@ namespace HospitalManagementSystem.Forms.Patient
                             p.Disease,
                             p.Allergy
                         );
+
+                        DataGridHelper.AutoFitColumns(dgvPrescriptions,minWidth: 60, maxWidth: 300);
+
                     }
                 }
                 else
