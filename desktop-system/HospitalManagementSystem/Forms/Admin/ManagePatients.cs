@@ -5,6 +5,7 @@ using MaterialSkin.Controls;
 using HospitalManagementSystem.Core;
 using HospitalManagementSystem.Models;
 using Newtonsoft.Json;
+using HospitalManagementSystem.Helpers;
 using PatientModel = HospitalManagementSystem.Models.Patient;
 
 namespace HospitalManagementSystem.Forms.Admin
@@ -14,6 +15,20 @@ namespace HospitalManagementSystem.Forms.Admin
         public ManagePatients()
         {
             InitializeComponent();
+
+            //Apply consistent styling to the DataGridView
+            DataGridHelper.Apply(dgvPatients);
+
+            // pid | fname | lname | gender | email | contact
+            DataGridHelper.SetColumnWidths(dgvPatients,
+                60,   // ID
+                120,  // First Name
+                120,  // Last Name
+                80,   // Gender
+                -1,   // Email — fills remaining space
+                110   // Contact
+            );
+
             LoadPatients();
         }
 
@@ -32,19 +47,12 @@ namespace HospitalManagementSystem.Forms.Admin
                     foreach (var p in result.Data)
                     {
                         dgvPatients.Rows.Add(
-                            p.Pid,
-                            p.Fname,
-                            p.Lname,
-                            p.Gender,
-                            p.Email,
-                            p.Contact
-                        );
+                            p.Pid, p.Fname, p.Lname,
+                            p.Gender, p.Email, p.Contact);
                     }
-                }
-                else
-                {
-                    MessageBox.Show(result.Message, "Error",
-                        MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+                    //  Auto-fit after data loads
+                    DataGridHelper.AutoFitColumns(dgvPatients);
                 }
             }
             catch (Exception ex)
@@ -53,6 +61,7 @@ namespace HospitalManagementSystem.Forms.Admin
                     "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+        
 
         // ── Row Selected — Populate Fields ─────────────────────
         private void dgvPatients_SelectionChanged(object sender, EventArgs e)
