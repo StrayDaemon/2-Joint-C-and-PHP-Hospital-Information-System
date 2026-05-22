@@ -1,4 +1,5 @@
 ﻿using HospitalManagementSystem.Core;
+using HospitalManagementSystem.Helpers;
 using HospitalManagementSystem.Models;
 using System;
 using System.Collections.Generic;
@@ -13,6 +14,19 @@ namespace HospitalManagementSystem.Forms.Admin
         public ManageDoctors()
         {
             InitializeComponent();
+
+            // Apply dynamic grid styling
+            DataGridHelper.Apply(dgvDoctors);
+
+            // ✅Set column widths
+            // username | email | spec | docFees
+            DataGridHelper.SetColumnWidths(dgvDoctors,
+                130,  // Username
+                -1,   // Email — fills remaining space
+                160,  // Specialization
+                100   // Fees
+            );
+
             LoadDoctors();
         }
 
@@ -37,6 +51,10 @@ namespace HospitalManagementSystem.Forms.Admin
                             d.DocFees
                         );
                     }
+
+                    // ✅ Auto-fit after data loads
+                    DataGridHelper.AutoFitColumns(dgvDoctors,
+                        minWidth: 100, maxWidth: 300);
                 }
                 else
                 {
@@ -65,7 +83,7 @@ namespace HospitalManagementSystem.Forms.Admin
             string spec = row.Cells["colSpec"].Value?.ToString();
             cmbSpec.SelectedItem = spec;
 
-            // Password hidden — clear on select for security
+            // Clear password on select for security
             txtPassword.Text = "";
         }
 
@@ -84,7 +102,9 @@ namespace HospitalManagementSystem.Forms.Admin
                 MessageBox.Show(result.Message,
                     result.Success ? "Success" : "Error",
                     MessageBoxButtons.OK,
-                    result.Success ? MessageBoxIcon.Information : MessageBoxIcon.Error);
+                    result.Success
+                        ? MessageBoxIcon.Information
+                        : MessageBoxIcon.Error);
 
                 if (result.Success) { ClearFields(); LoadDoctors(); }
             }
@@ -117,7 +137,9 @@ namespace HospitalManagementSystem.Forms.Admin
                 MessageBox.Show(result.Message,
                     result.Success ? "Success" : "Error",
                     MessageBoxButtons.OK,
-                    result.Success ? MessageBoxIcon.Information : MessageBoxIcon.Error);
+                    result.Success
+                        ? MessageBoxIcon.Information
+                        : MessageBoxIcon.Error);
 
                 if (result.Success) { ClearFields(); LoadDoctors(); }
             }
@@ -148,18 +170,15 @@ namespace HospitalManagementSystem.Forms.Admin
 
             try
             {
-                var formData = new Dictionary<string, string>
-                {
-                    { "username", txtUsername.Text.Trim() }
-                };
-
                 var result = await ApiClient.DeleteAsync<ApiResponse>(
                     $"doctors/{txtUsername.Text}");
 
                 MessageBox.Show(result.Message,
                     result.Success ? "Success" : "Error",
                     MessageBoxButtons.OK,
-                    result.Success ? MessageBoxIcon.Information : MessageBoxIcon.Error);
+                    result.Success
+                        ? MessageBoxIcon.Information
+                        : MessageBoxIcon.Error);
 
                 if (result.Success) { ClearFields(); LoadDoctors(); }
             }
@@ -186,21 +205,25 @@ namespace HospitalManagementSystem.Forms.Admin
                 cmbSpec.SelectedItem == null)
             {
                 MessageBox.Show("Please fill in all fields.",
-                    "Validation", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    "Validation", MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
                 return false;
             }
 
             if (requirePassword && string.IsNullOrEmpty(txtPassword.Text))
             {
-                MessageBox.Show("Password is required when adding a doctor.",
-                    "Validation", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                MessageBox.Show(
+                    "Password is required when adding a doctor.",
+                    "Validation", MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
                 return false;
             }
 
             if (!int.TryParse(txtFees.Text, out _))
             {
                 MessageBox.Show("Doctor fees must be a valid number.",
-                    "Validation", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    "Validation", MessageBoxButtons.OK,
+                    MessageBoxIcon.Warning);
                 return false;
             }
 
@@ -211,11 +234,11 @@ namespace HospitalManagementSystem.Forms.Admin
         {
             return new Dictionary<string, string>
             {
-                { "username", txtUsername.Text.Trim() },
-                { "password", txtPassword.Text.Trim() },
-                { "email",    txtEmail.Text.Trim()    },
-                { "spec",     cmbSpec.SelectedItem.ToString() },
-                { "docFees",  txtFees.Text.Trim()     }
+                { "username", txtUsername.Text.Trim()              },
+                { "password", txtPassword.Text.Trim()              },
+                { "email",    txtEmail.Text.Trim()                 },
+                { "spec",     cmbSpec.SelectedItem.ToString()      },
+                { "docFees",  txtFees.Text.Trim()                  }
             };
         }
 
